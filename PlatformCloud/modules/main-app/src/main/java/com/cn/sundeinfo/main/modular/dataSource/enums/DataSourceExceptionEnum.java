@@ -1,0 +1,76 @@
+/*
+Copyright [2020] [https://www.xiaonuo.vip]
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+XiaoNuo采用APACHE LICENSE 2.0开源协议，您在使用过程中，需要注意以下几点：
+
+1.请不要删除和修改根目录下的LICENSE文件。
+2.请不要删除和修改XiaoNuo源码头部的版权声明。
+3.请保留源码和相关描述文件的项目出处，作者声明等。
+4.分发源码时候，请注明软件出处 https://gitee.com/xiaonuo/xiaonuo-vue
+5.在修改包名，模块名称，项目代码等时，请注明软件出处 https://gitee.com/xiaonuo/xiaonuo-vue
+6.若您的项目无法满足以上几点，可申请商业授权，获取XiaoNuo商业授权许可，请在官网购买授权，地址为 https://www.xiaonuo.vip
+ */
+package com.cn.sundeinfo.main.modular.dataSource.enums;
+
+import com.cn.sundeinfo.core.annotion.ExpEnumType;
+import com.cn.sundeinfo.core.exception.enums.abs.AbstractBaseExceptionEnum;
+import com.cn.sundeinfo.core.factory.ExpEnumCodeFactory;
+import com.cn.sundeinfo.sys.core.consts.MainExpEnumConstant;
+
+/**
+ * 数据源异常枚举
+ *@创建人  libiao
+ *@创建时间  2021/4/26
+ */
+@ExpEnumType(module = MainExpEnumConstant.SUNDEINFO_MAIN_MODULE_EXP_CODE, kind = MainExpEnumConstant.DATA_SOURCE_EXCEPTION_ENUM)
+public enum DataSourceExceptionEnum implements AbstractBaseExceptionEnum {
+
+
+    CODE_REPEAT(1, "唯一编码重复，请检查code参数"),
+
+    FILE_SAVE_FAILED(2, "文件保存失败，请联系管理员"),
+
+    FILE_FORMAT_ERROR(3, "文件格式不正确，请上传正确格式的文件"),
+
+    METADATATYPE_DATASOURCETYPE_UNMATCHED(4, "数据源类型与元数据类型不匹配，请检查后再重新抽取"),
+
+    UPLOAD_FILE_NULL(5, "数据源文件不能为空，请上传要抽取的文件"),
+
+    DATACOLLECT_NULL(6, "数据集不能为空，请选择数据集后再重新抽取"),
+
+    CONNECTION_FAILED(7, "数据源连接失败，请检查连接属性"),
+
+    CONNECTION_SUCCESS(8, "数据源连接成功"),
+
+    GET_DATA_FAILED(9, "获取数据失败，请检查连接属性和aip路径");
+
+    private final Integer code;
+
+    private final String message;
+
+    DataSourceExceptionEnum(int code, String message) {
+        this.code = code;
+        this.message = message;
+    }
+
+    @Override
+    public Integer getCode() {
+        return ExpEnumCodeFactory.getExpEnumCode(this.getClass(), code);
+    }
+
+    @Override
+    public String getMessage() {
+        return message;
+    }}

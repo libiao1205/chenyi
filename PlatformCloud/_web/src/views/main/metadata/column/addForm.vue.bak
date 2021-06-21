@@ -1,0 +1,345 @@
+<template>
+  <a-modal
+    title="新增元数据"
+    :width="900"
+    :visible="visible"
+    :confirmLoading="confirmLoading"
+    @ok="handleSubmit"
+    @cancel="handleCancel"
+    :maskClosable="false"
+  >
+    <a-spin :spinning="confirmLoading">
+      <a-form :form="form">
+
+        <a-form-item
+          style="display:none;"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+        >
+          <a-input v-decorator="['tableCode']" />
+        </a-form-item>
+
+        <a-form-item
+          style="display:none;"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+        >
+          <a-input v-decorator="['parentCode']" />
+        </a-form-item>
+
+        <a-form-item
+          label="元数据表"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+        >
+          <a-input :disabled="true " v-decorator="['tableName']" />
+        </a-form-item>
+
+        <a-form-item
+          v-if="addChildren"
+          label="上级"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+        >
+          <a-input :disabled="true" v-decorator="['parentName']" />
+        </a-form-item>
+        <a-form-item
+          label="唯一编码"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+        >
+          <a-input placeholder="请输入唯一编码" v-decorator="['code', {rules: [{required: true, message: '请输入唯一编码！'}]}]" />
+        </a-form-item>
+        <a-form-item
+          label="元数据名称"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+        >
+          <a-input placeholder="请输入元数据名称" v-decorator="['name', {rules: [{required: true, message: '请输入元数据名称！'}]}]" />
+        </a-form-item>
+        <a-form-item
+          label="数据类型"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+        >
+          <a-select style="width: 100%" placeholder="请选择数据类型" v-decorator="['dataTypeCode', {rules: [{ required: true, message: '请选择数据类型！' }]}]" >
+            <a-select-option v-for="(item,index) in dataTypeList" :key="index" :value="item.code" @click="changeDataType(item.code)">{{ item.value }}</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item
+          label="字段编号"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+          v-if="showMarcField"
+        >
+          <a-input placeholder="请输入字段编号" v-decorator="['marcField', {rules: [{required: true, message: '请输入字段编号！'}]}]" />
+        </a-form-item>
+        <a-form-item
+          label="字段指示符"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+          v-if="showMarcField"
+        >
+          <a-input placeholder="请输入字段指示符" v-decorator="['marcIndicator']" />
+        </a-form-item>
+        <a-form-item
+          label="子字段编号"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+          v-if="showMarcField"
+        >
+          <a-input placeholder="请输入子字段编号" v-decorator="['marcChildrenField']" />
+        </a-form-item>
+        <a-form-item
+          label="是否为定长字段"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          v-if="showMarcField"
+        >
+          <a-switch id="fixedLengthField" checkedChildren="是" unCheckedChildren="否" v-decorator="['marcFixedLengthField', { valuePropName: 'checked' }]" @change="onChangeFixedLength($event)" />
+          <span v-if="showFixedLengthField" style="margin-left: 26px">
+            <a-input-number placeholder="请输入开始位置" style="width: calc(44% - 13px);" v-decorator="['marcStartFixedLength', { initialValue: 0}]" :min="0" :max="1000" />
+            -
+            <a-input-number placeholder="请输入结束位置" style="width: calc(44% - 13px)" v-decorator="['marcEndFixedLength', { initialValue: 1}]" :min="1" :max="1000" />
+          </span>
+        </a-form-item>
+        <a-form-item
+          label="字段下标"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+          v-if="showExcelField"
+        >
+          <a-input placeholder="请输入字段下标" v-decorator="['excelFieldIndex', {rules: [{required: true, message: '请输入字段下标！'}]}]" />
+        </a-form-item>
+        <a-form-item
+          label="ES字段名"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+          v-if="showESField"
+        >
+          <a-input placeholder="请输入字段名称" v-decorator="['esFieldName', {rules: [{required: true, message: '请输入字段名称！'}]}]" />
+        </a-form-item>
+        <a-form-item
+          label="AS字段名"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+          v-if="showASField"
+        >
+          <a-input placeholder="请输入字段名称" v-decorator="['asFieldName', {rules: [{required: true, message: '请输入字段名称！'}]}]" />
+        </a-form-item>
+        <a-form-item
+          label="分词器"
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          has-feedback
+          v-if="showESField"
+        >
+          <a-select style="width: 100%" placeholder="请选择分词器" v-decorator="['esFieldAnalyzer', {rules: [{ required: true, message: '请选择分词器！' }]}]" >
+            <a-select-option v-for="(item,index) in esAnalyzerList" :key="index" :value="item" >{{ item }}</a-select-option>
+          </a-select>
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="长度"
+        >
+          <a-input-number placeholder="请输入字段长度" style="width: 100%" v-decorator="['length', {initialValue: 50, rules: [{required: true, message: '请输入字段长度！'}]}]" :min="1" :max="1000" />
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="排序"
+        >
+          <a-input-number placeholder="请输入排序" style="width: 100%" v-decorator="['sort', { initialValue: 100 }]" :min="1" :max="1000" />
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="是否创建索引"
+          v-if="showESField"
+        >
+          <a-switch id="esFieldIndex" checkedChildren="是" unCheckedChildren="否" v-decorator="['esFieldIndex', { valuePropName: 'checked' }]"/>
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="是否非空"
+        >
+          <a-switch id="isNull" checkedChildren="是" unCheckedChildren="否" v-decorator="['isNull', { valuePropName: 'checked' }]"/>
+        </a-form-item>
+        <a-form-item
+          :labelCol="labelCol"
+          :wrapperCol="wrapperCol"
+          label="是否允许多列"
+        >
+          <a-switch id="isMore" checkedChildren="是" unCheckedChildren="否" v-decorator="['moreColumn', { valuePropName: 'checked' }]"/>
+        </a-form-item>
+      </a-form>
+    </a-spin>
+  </a-modal>
+</template>
+<script>
+  import { metadataColumnAdd } from '@/api/modular/main/metadataColumn'
+  import { sysDictDataChildren } from '@/api/modular/system/dictDataManage'
+  import { mapGetters, mapState } from 'vuex'
+  export default {
+    compputed: {
+      ...mapGetters({
+        getExcelMetadataCode: 'constant/getExcelMetadataCode',
+        getMarcMetadataCode: 'constant/getMarcMetadataCode',
+        getASMetadataCode: 'constant/getASMetadataCode',
+        getESMetadataCode: 'constant/getESMetadataCode'
+      }),
+      ...mapState({
+        esAnalyzerList: state => state.constant.esAnalyzerList,
+        metadataFieldConstraint: state => state.constant.metadataFieldConstraint
+      })
+    },
+    data () {
+      return {
+        labelCol: {
+          xs: { span: 24 },
+          sm: { span: 5 }
+        },
+        wrapperCol: {
+          xs: { span: 24 },
+          sm: { span: 15 }
+        },
+        visible: false,
+        confirmLoading: false,
+        form: this.$form.createForm(this),
+        addChildren: false,
+        metadataTypeList: [],
+        dataTypeList: [],
+        // 元数据类型
+        typeCode: '',
+        // 是否显示marc数据字段
+        showMarcField: false,
+        // 是否显示excel数据字段
+        showExcelField: false,
+        // 是否显示AS数据字段
+        showASField: false,
+        // 是否显示AS数据字段
+        showESField: false,
+        showFixedLengthField: false
+      }
+    },
+    methods: {
+      // 初始化方法
+      add (record) {
+        this.enterSubmit()
+        this.showMarcField = false
+        this.showExcelField = false
+        this.typeCode = record.typeCode
+        if (this.typeCode === this.getASMetadataCode()) {
+          this.showASField = true
+        } else if (this.typeCode === this.getESMetadataCode()) {
+          this.showESField = true
+        } else {
+          this.showASField = false
+          this.showESField = false
+        }
+        if (record.code !== undefined) {
+          this.addChildren = true
+        } else {
+          this.addChildren = false
+        }
+        setTimeout(() => {
+          this.form.setFieldsValue({
+            parentCode: record.code === undefined ? '' : record.code,
+            parentName: record.name === undefined ? '' : record.name,
+            tableCode: record.tableCode,
+            tableName: record.tableName,
+            esFieldAnalyzer: this.esAnalyzerList[0]
+          })
+        }, 100)
+        this.visible = true
+        this.initDataType(record.typeCode)
+      },
+      initDataType(typeCode) {
+        sysDictDataChildren({ typeId: 0, code: typeCode }).then((res) => {
+          this.dataTypeList = []
+          res.data.forEach((row) => {
+            this.dataTypeList.push({ id: row.id, code: row.code, value: row.value })
+          })
+        })
+      },
+      handleSubmit () {
+        const { form: { validateFields } } = this
+        this.confirmLoading = true
+        validateFields((errors, values) => {
+          values.moreColumn = values.moreColumn ? 1 : 0
+          values.isNull = values.isNull ? 1 : 0
+          values.esFieldIndex = values.esFieldIndex ? 1 : 0
+          if (values.marcFixedLengthField && (values.marcStartFixedLength === null || values.marcStartFixedLength === null)) {
+            this.$message.error('请输入定长字段截取位置！')
+            this.confirmLoading = false
+            return
+          }
+          values.marcFixedLengthField = values.marcFixedLengthField ? 1 : 0
+          if (!errors) {
+            metadataColumnAdd(values).then((res) => {
+              this.confirmLoading = false
+              if (res.success) {
+                this.$message.success('新增成功')
+                this.handleCancel()
+                this.$emit('ok', values)
+              } else {
+                this.$message.error('新增失败：' + res.message)
+              }
+            }).finally((res) => {
+              this.confirmLoading = false
+            })
+          } else {
+            this.confirmLoading = false
+          }
+        })
+      },
+      handleCancel () {
+        this.form.resetFields()
+        this.visible = false
+      },
+      changeMetadataType(item) {
+        console.log('change')
+      },
+      changeDataType(code) {
+        const dataType = code.split('_')
+        if (dataType[dataType.length - 1] !== 'json') {
+          if (this.typeCode === this.getExcelMetadataCode()) {
+            this.showExcelField = true
+          } else if (this.typeCode === this.getMarcMetadataCode()) {
+            this.showMarcField = true
+          }
+        } else {
+          this.showMarcField = false
+          this.showExcelField = false
+        }
+      },
+      onChangeFixedLength(e) {
+        this.showFixedLengthField = e
+      },
+      enterSubmit() {
+        const _this = this
+        document.onkeydown = (e) => {
+          const key = window.event.keyCode
+          if (key === 13 && _this.visible) {
+            _this.handleSubmit()
+          }
+        }
+      }
+    }
+  }
+</script>

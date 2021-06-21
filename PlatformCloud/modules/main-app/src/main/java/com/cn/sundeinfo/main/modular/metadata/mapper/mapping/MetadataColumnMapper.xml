@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.sundeinfo.main.modular.metadata.mapper.MetadataColumnMapper">
+    <resultMap id="BaseResultMap" type="com.cn.sundeinfo.main.modular.metadata.response.MetadataColumnResponse">
+        <constructor>
+            <idArg column="id" javaType="java.lang.Long" jdbcType="BIGINT" />
+            <arg column="tableCode" javaType="java.lang.String" jdbcType="VARCHAR" />
+             <arg column="parentCode" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="code" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="name" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="dataTypeCode" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="moreColumn" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="marcField" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="marcChildrenField" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="marcIndicator" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="excelFieldIndex" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="asFieldName" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="esFieldName" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="esFieldIndex" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="esFieldAnalyzer" javaType="java.lang.String" jdbcType="VARCHAR" />
+            <arg column="version" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="status" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="sort" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="length" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="isNull" javaType="java.lang.Integer" jdbcType="INTEGER" />
+            <arg column="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+            <arg column="createUser" javaType="java.lang.Long" jdbcType="BIGINT" />
+            <arg column="updateTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+            <arg column="updateUser" javaType="java.lang.Long" jdbcType="BIGINT" />
+        </constructor>
+    </resultMap>
+    <sql id="Base_Column_List">
+        x.id, x.table_code as tableCode, x.parent_code as parentCode, x.code, x.name, x.data_type_code as dataTypeCode, x.more_column as moreColumn,
+        x.marc_field as marcField, x.marc_children_field as marcChildrenField, x.marc_indicator as marcIndicator, x.excel_field_index as excelFieldIndex, x.as_field_name as asFieldName,
+        x.es_field_name as esFieldName, x.es_field_index as esFieldIndex, x.es_field_analyzer as esFieldAnalyzer, x.version, x.status, x.sort, x.length, x.is_null as isNull, x.create_time as createTime,
+        x.create_user as createUser, x.update_time as updateTime, x.update_user as updateUser
+    </sql>
+    <select id="pageInfo" parameterType="com.cn.sundeinfo.main.modular.metadata.param.MetadataColumnParam" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from (select code,max(version) as version from g_metadata_column GROUP BY code) y left join g_metadata_column x on y.code = x.code and y.version=x.version
+        where x.status = 0 and (x.parent_code is null or x.parent_code = '')
+        <if test="tableCode != null and tableCode != ''">
+            and x.table_code = #{tableCode,jdbcType=VARCHAR}
+        </if>
+        <if test="name != null and name != ''">
+            and x.name like "%"#{name,jdbcType=VARCHAR}"%"
+        </if>
+        <if test="code != null and code != ''">
+            and x.code like "%"#{code,jdbcType=VARCHAR}"%"
+        </if>
+        order by x.sort
+        <if test="pageNum != null and pageSize != null and pageSize != 0">
+            limit ${pageNum},${pageSize}
+        </if>
+    </select>
+
+    <select id="count" parameterType="com.cn.sundeinfo.main.modular.metadata.param.MetadataColumnParam" resultType="java.lang.Integer">
+        select count(x.code) from (select code,max(version) as version from g_metadata_column GROUP BY code) y left join g_metadata_column x on y.code = x.code and y.version=x.version
+        where x.status = 0 and (x.parent_code is null or x.parent_code = '')
+        <if test="tableCode != null and tableCode != ''">
+            and x.table_code = #{tableCode,jdbcType=VARCHAR}
+        </if>
+        <if test="name != null and name != ''">
+            and x.name like "%"#{name,jdbcType=VARCHAR}"%"
+        </if>
+        <if test="code != null and code != ''">
+            and x.code like "%"#{code,jdbcType=VARCHAR}"%"
+        </if>
+    </select>
+
+    <select id="findByTableCodeAndVersion" parameterType="com.cn.sundeinfo.main.modular.metadata.param.MetadataColumnParam" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from (select code,max(version) as version from g_metadata_column where #{version,jdbcType=INTEGER} >= version GROUP BY code) y left join g_metadata_column x on y.code = x.code and y.version=x.version
+        where x.status = 0
+        <if test="parentCode == null or parentCode == ''">
+            and (x.parent_code is null or x.parent_code = '')
+        </if>
+        <if test="parentCode != null and parentCode != ''">
+            and x.parent_code = #{parentCode,jdbcType=VARCHAR}
+        </if>
+        <if test="tableCode != null and tableCode != ''">
+            and x.table_code = #{tableCode,jdbcType=VARCHAR}
+        </if>
+        <if test="name != null and name != ''">
+            and x.name like "%"#{name,jdbcType=VARCHAR}"%"
+        </if>
+        <if test="code != null and code != ''">
+            and x.code like "%"#{code,jdbcType=VARCHAR}"%"
+        </if>
+        order by x.sort
+    </select>
+
+    <select id="listInfo" parameterType="com.cn.sundeinfo.main.modular.metadata.param.MetadataColumnParam" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from (select code,max(version) as version from g_metadata_column GROUP BY code) y left join g_metadata_column x on y.code = x.code and y.version=x.version
+        where x.status = 0
+        <if test="tableCode != null and tableCode != ''">
+            and x.table_code = #{tableCode,jdbcType=VARCHAR}
+        </if>
+        <if test="name != null and name != ''">
+            and x.name like "%"#{name,jdbcType=VARCHAR}"%"
+        </if>
+        <if test="code != null and code != ''">
+            and x.code like "%"#{code,jdbcType=VARCHAR}"%"
+        </if>
+        <if test="parentCode != null and parentCode != ''">
+            and x.parent_code = #{parentCode,jdbcType=VARCHAR}
+        </if>
+        order by x.sort
+    </select>
+
+    <select id="findParentOne" parameterType="com.cn.sundeinfo.main.modular.metadata.param.MetadataColumnParam" resultMap="BaseResultMap">
+        select <include refid="Base_Column_List" /> from (select code,max(version) as version from g_metadata_column GROUP BY code) y left join g_metadata_column x on y.code = x.code and y.version=x.version
+        where x.status = 0 and x.code = #{parentCode,jdbcType=VARCHAR}
+    </select>
+
+    <select id="findPermissionByRoleCode" resultType="java.util.HashMap">
+        select code,es_field_name,permission,table_code from
+        (select metadata_column_code, permission, id, role_code from sys_role_metadata where role_code in
+        <foreach collection="list" item="role_code" index="index" open="(" close=")" separator=",">
+            #{role_code}
+        </foreach>
+        group by metadata_column_code) t
+        left join
+        (select id,code,name,es_field_name,table_code,max(version) as version from g_metadata_column where status = 0 and es_field_index=1 and (table_code='m_t_article' or table_code='m_t_incident') GROUP BY code) t1
+        on t.metadata_column_code=t1.code where t1.id is not null
+    </select>
+
+
+</mapper>

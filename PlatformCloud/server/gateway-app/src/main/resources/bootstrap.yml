@@ -1,0 +1,9 @@
+server:
+  port: 9004
+
+#spring相关配置
+spring:
+  application:
+    name: gateway-app
+  profiles:
+    active: '@spring.active@'

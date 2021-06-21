@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <groupId>cn.sundeinfo</groupId>
+    <artifactId>server</artifactId>
+    <version>1.1.0</version>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>eureka-app</artifactId>
+
+  <name>eureka-app</name>
+  <description>eureka服务端</description>
+  <dependencies>
+
+    <!--增加eureka-server的依赖 -->
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>de.codecentric</groupId>
+      <artifactId>spring-boot-admin-starter-client</artifactId>
+    </dependency>
+
+    <!-- hutool -->
+    <dependency>
+      <groupId>cn.hutool</groupId>
+      <artifactId>hutool-all</artifactId>
+    </dependency>
+
+    <!-- lombok -->
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <finalName>${project.artifactId}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <fork>true</fork>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>1.2.0</version>
+        <executions>
+          <execution>
+            <id>build-image</id>
+            <phase>package</phase>
+            <goals>
+              <goal>build</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <dockerHost>http://192.168.1.27:2375</dockerHost>
+          <imageName>cysjk2/${project.artifactId}</imageName>
+          <imageTags>
+            <imageTag>${project.version}</imageTag>
+          </imageTags>
+          <forceTags>true</forceTags>
+          <dockerDirectory>${project.basedir}</dockerDirectory>
+          <resources>
+            <resource>
+              <targetPath>/</targetPath>
+              <directory>${project.build.directory}</directory>
+              <include>${project.build.finalName}.jar</include>
+            </resource>
+          </resources>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

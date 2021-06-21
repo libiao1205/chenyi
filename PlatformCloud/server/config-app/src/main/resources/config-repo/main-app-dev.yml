@@ -1,0 +1,8 @@
+spring:
+  redis:
+    host: localhost
+    port: 28001
+sundeinfo:
+  main:
+    config:
+      test: main-test-dev
